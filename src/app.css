@@ -1,0 +1,6 @@
+@import 'tailwindcss';
+
+@theme {
+	--font-libre: 'Libre Caslon Text', 'serif';
+	--font-geist: 'Geist', 'sans-serif';
+}
