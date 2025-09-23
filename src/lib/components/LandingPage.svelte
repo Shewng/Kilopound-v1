@@ -12,8 +12,8 @@
 	onclick={dismiss}
 	role="presentation"
 >
-	<div class="text-center -translate-y-20 lg:-translate-y-10">
-		<h1 class="font-libre italic text-6xl/normal lg:text-9xl/normal text-gray-800">Kilopound</h1>
+	<div class="text-center -translate-y-10 lg:-translate-y-10">
+		<h1 class="font-libre italic text-6xl/normal lg:text-9xl/normal text-slate-800">Kilopound</h1>
 		<p class="font-libre text-base lg:text-xl text-gray-700">visualizing weights on a barbell</p>
 	</div>
 	<p class="font-libre italic text-sm lg:text-base text-slate-500 fixed bottom-1/9">
@@ -24,7 +24,7 @@
             Kilopound
         </h1>
         -->
-	<img class="fixed w-95/100 bottom-105 lg:bottom-50" src={landing} alt="" />
+	<img class="fixed w-95/100 bottom-87 lg:bottom-50" src={landing} alt="" />
 </section>
 <Footer />
 
