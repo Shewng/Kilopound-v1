@@ -98,6 +98,11 @@
 	let isInputLoading: boolean = $state(false);
 	let isErrorInput: boolean = $state(false);
 
+	$effect(() => {
+		isInputMode
+			? document.body.classList.add('overflow-hidden')
+			: document.body.classList.remove('overflow-hidden');
+	});
 	$inspect(plates);
 
 	/* Functions */
@@ -179,6 +184,21 @@
 	function openManual() {
 		manualVisible = true;
 	}
+
+	// Open input mode
+	function openInput() {
+		isInputMode = true;
+	}
+
+	// Close input mode
+	function closeInput() {
+		isInputMode = false;
+	}
+
+	// load calculated weight
+	function loadWeight() {
+		closeInput();
+	}
 </script>
 
 <main class="relative">
@@ -189,7 +209,17 @@
 			}}
 		/>
 	{:else}
-		<div class="relative flex flex-col items-center mx-4 mt-2 h-screen">
+		<!-- Blur overlay -->
+		{#if isInputMode}
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
+			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+			<div
+				onclick={closeInput}
+				role="region"
+				class="fixed inset-0 h-screen w-full backdrop-blur-md z-11 cursor"
+			></div>
+		{/if}
+		<div class="relative flex flex-col items-center px-4 pt-2">
 			<!-- Title -->
 			<div class="flex justify-between w-full mb-15">
 				<div class="flex flex-col">
@@ -206,7 +236,44 @@
 			<!-- Total Weight Display -->
 			<div class="flex flex-col items-center text-center">
 				<span class="text-xs text-gray-400 z-10">{barbell.name}</span>
-				<h2 class="font-geist font-bold text-3xl text-slate-800 py-2.5 z-10">{total} {unit}</h2>
+				<div class="relative flex items-center">
+					<button
+						onclick={openInput}
+						class="font-geist font-bold text-center text-3xl text-slate-800 px-1 py-2 my-1.5 w-42 hover:rounded-md hover:ring-1 hover:ring-gray-300 cursor-pointer z-10"
+						>{total} {unit}</button
+					>
+					{#if isInputMode}
+						<div class="absolute flex flex-col items-center z-11">
+							{#if unit === Unit.kg}
+								<span class="font-geist text-xs text-gray-400"
+									>Max load: {WEIGHT_LIMIT_KG} {unit}</span
+								>
+							{/if}
+							{#if unit === Unit.lbs}
+								<span class="font-geist text-xs text-gray-400"
+									>Max load: {WEIGHT_LIMIT_LBS} {unit}</span
+								>
+							{/if}
+							<span class="font-geist text-xs text-gray-400"
+								>Max plates per side: {PLATE_LIMIT}</span
+							>
+							<input
+								type="number"
+								class="font-geist font-bold text-center bg-white text-3xl text-slate-800 px-1 py-1.5 my-1.5 max-w-42 rounded-md ring-1 ring-gray-300 [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
+								value={`${total}`}
+							/>
+							<button
+								onclick={loadWeight}
+								class="font-geist bg-slate-800 text-white whitespace-nowrap rounded-md w-full h-fit border py-2.5 px-5 text-xs cursor-pointer"
+								>Autoload</button
+							>
+							<!--style this button later by adding button versions?
+							<Button text={'Autoload'} action={loadWeight} />
+							-->
+						</div>
+					{/if}
+					<span class="absolute right-3 icon-[material-symbols--edit-outline] text-lg"></span>
+				</div>
 				<span class="font-geist text-lg text-gray-400 z-10">{convertedTotal} {convertedUnit}</span>
 				<div class="relative text-center flex flex-col items-center z-5 overflow-clip">
 					<h2 class="font-geist font-semibold text-9xl text-stone-50 absolute bottom-0 opacity-98">
@@ -214,6 +281,7 @@
 					</h2>
 				</div>
 			</div>
+
 			<!-- Barbell -->
 			<div class=" overflow-clip">
 				<section class="hidden sm:flex">
@@ -237,7 +305,7 @@
 			</div>
 
 			<!-- Plates -->
-			<section class="min-h-100">
+			<section class="mb-26">
 				{#if unit == Unit.kg}
 					<section class="flex justify-center w-full items-end gap-2">
 						{#each PLATE_KG.slice(0, 3) as plate, i}
@@ -291,7 +359,7 @@
 			<div class="fixed bottom-0 flex flex-col justify-center items-center mt-auto mb-5">
 				<div class="flex gap-1">
 					<Button text={'Swap to LBS'} action={toggleUnit} />
-					<Button text={'Reset'} action={resetBarbell} />
+					<Button text={'Reset'} action={resetBarbell} icon={'icon-[ri--reset-left-fill]'} />
 					<Button text={'Normal Barbell'} action={toggleUnit} />
 				</div>
 			</div>

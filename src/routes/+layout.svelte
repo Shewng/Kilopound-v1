@@ -1,7 +1,7 @@
 <script lang="ts">
 	import favicon from '$lib/assets/favicon.svg';
-	import "../app.css";
-	import "../font.css";
+	import '../app.css';
+	import '../font.css';
 
 	let { children } = $props();
 </script>
@@ -10,4 +10,5 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
+<!-- this is a slot -->
 {@render children?.()}
