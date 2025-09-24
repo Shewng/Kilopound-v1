@@ -78,6 +78,8 @@
 			? parseFloat((total * 2.2046).toFixed(0))
 			: parseFloat((total / 2.2046).toFixed(0))
 	);
+	let inputTotal: number = $derived(total);
+	let inputTotalMod: number = $derived(inputTotal);
 
 	// Booleans for visibility
 	let landingVisible: boolean = $state(false);
@@ -93,10 +95,12 @@
 			: plates.reduce((sum, plate) => sum + plate.count, 0) >= WEIGHT_LIMIT_LBS
 	);
 
+	let isError: boolean = $state(false); // generic error (non-input)
+
 	// Input mode setup
 	let isInputMode: boolean = $state(false);
 	let isInputLoading: boolean = $state(false);
-	let isErrorInput: boolean = $state(false);
+	let isInputError: boolean = $state(false); // input error
 
 	$effect(() => {
 		isInputMode
@@ -193,11 +197,40 @@
 	// Close input mode
 	function closeInput() {
 		isInputMode = false;
+		inputTotal = total; // match input total to total
+	}
+
+	// Prevent certain characters from being entered into the input
+	function validateInput(e: any) {
+		let input;
+		if (inputTotal == null) input = '0';
+		else input = inputTotal.toString();
+
+		// check user paste value
+		if (e.data && e.inputType == 'insertFromPaste') {
+			if (input.includes('.')) {
+				// if input already includes decimal, user can only paste numbers.
+				if (!/^\d+$/.test(e.data)) e.preventDefault();
+			} else {
+				// if input doesn't include a decimal, user can only paste numbers and at most 1 decimal.
+				if (!/^\d*\.?\d*$/.test(e.data)) e.preventDefault();
+			}
+		}
+		// user can only input one decimal
+		else if (e.data && e.data == '.') {
+			// block any more decimal inputs
+			if (input.includes('.')) e.preventDefault();
+		}
+		// user can only input numerical characters
+		else if (e.data && !/^\d$/.test(e.data)) {
+			e.preventDefault();
+		}
 	}
 
 	// load calculated weight
 	function loadWeight() {
-		closeInput();
+		// intentionally trigger loading state
+		//closeInput();
 	}
 </script>
 
@@ -240,7 +273,11 @@
 					<button
 						onclick={openInput}
 						class="font-geist font-bold text-center text-3xl text-slate-800 px-1 py-2 my-1.5 w-42 hover:rounded-md hover:ring-1 hover:ring-gray-300 cursor-pointer z-10"
-						>{total} {unit}</button
+						>{total}
+						{unit}
+						<span
+							class="self-center absolute bottom-1/2 top-1/2 ml-2 icon-[material-symbols--edit-outline] text-lg"
+						></span></button
 					>
 					{#if isInputMode}
 						<div class="absolute flex flex-col items-center z-11">
@@ -258,9 +295,12 @@
 								>Max plates per side: {PLATE_LIMIT}</span
 							>
 							<input
-								type="number"
-								class="font-geist font-bold text-center bg-white text-3xl text-slate-800 px-1 py-1.5 my-1.5 max-w-42 rounded-md ring-1 ring-gray-300 [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
-								value={`${total}`}
+								type="text"
+								inputmode="numeric"
+								class={`${isInputError ? 'ring-red-500' : 'ring-gray-300'} outline-none font-geist font-bold text-center bg-white text-3xl text-slate-800 px-1 py-1.5 my-1.5 w-42 rounded-md ring-1  [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none`}
+								bind:value={inputTotal}
+								placeholder="0"
+								onbeforeinput={(e) => validateInput(e)}
 							/>
 							<button
 								onclick={loadWeight}
@@ -272,7 +312,6 @@
 							-->
 						</div>
 					{/if}
-					<span class="absolute right-3 icon-[material-symbols--edit-outline] text-lg"></span>
 				</div>
 				<span class="font-geist text-lg text-gray-400 z-10">{convertedTotal} {convertedUnit}</span>
 				<div class="relative text-center flex flex-col items-center z-5 overflow-clip">
