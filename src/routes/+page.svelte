@@ -5,6 +5,7 @@
 	import Plate from '$lib/components/Plate.svelte';
 	import LoadedPlate from '$lib/components/LoadedPlate.svelte';
 	import Barbell from '$lib/components/Barbell.svelte';
+	import icon from '$lib/assets/iconplate.svg';
 
 	/* Interfaces */
 	// Barbell has a name, and two unit values
@@ -81,10 +82,6 @@
 	let inputTotal: number = $derived(total);
 	let inputTotalMod: number = $derived(inputTotal);
 
-	// Booleans for visibility
-	let landingVisible: boolean = $state(false);
-	let manualVisible: boolean = $state(false);
-
 	// Booleans for limits; true = reached, false = havent reached
 	const isPlateLimit: boolean = $derived(
 		plates.reduce((sum, plate) => sum + plate.count, 0) >= PLATE_LIMIT
@@ -97,13 +94,20 @@
 
 	let isError: boolean = $state(false); // generic error (non-input)
 
+	// Manual mode setup
+	let isManualMode: boolean = $state(false);
+
 	// Input mode setup
 	let isInputMode: boolean = $state(false);
 	let isInputLoading: boolean = $state(false);
 	let isInputError: boolean = $state(false); // input error
 
+	// Booleans for visibility
+	let landingVisible: boolean = $state(false);
+	let overlayVisible: boolean = $derived(isManualMode || isInputMode);
+
 	$effect(() => {
-		isInputMode
+		overlayVisible
 			? document.body.classList.add('overflow-hidden')
 			: document.body.classList.remove('overflow-hidden');
 	});
@@ -186,7 +190,7 @@
 
 	// Open manual
 	function openManual() {
-		manualVisible = true;
+		isManualMode = true;
 	}
 
 	// Open input mode
@@ -195,9 +199,11 @@
 	}
 
 	// Close input mode
-	function closeInput() {
-		isInputMode = false;
+	function closeOverlay() {
 		inputTotal = total; // match input total to total
+		isManualMode = false;
+		isInputMode = false;
+		isInputError = false;
 	}
 
 	// Prevent certain characters from being entered into the input
@@ -229,6 +235,18 @@
 
 	// load calculated weight
 	function loadWeight() {
+		// study V0 algorithm
+		// take input weight and reduce number to 2 decimal places
+		// check if input weight is too big or small, toggle isInputError
+		// grab plate values, from largest to smallest
+		// for each plate, find the remainders using plate value
+		// divide total plate values by 2. if not divisible by 2, move to the next possible weight value
+		// continue until left no more remainder. round this number to the closest plate value
+		// trigger boolean if rounded, to show message
+		// add plates into array, updating total.
+		// close input modal
+
+		isInputError = true;
 		// intentionally trigger loading state
 		//closeInput();
 	}
@@ -243,11 +261,11 @@
 		/>
 	{:else}
 		<!-- Blur overlay -->
-		{#if isInputMode}
+		{#if isInputMode || isManualMode}
 			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 			<div
-				onclick={closeInput}
+				onclick={closeOverlay}
 				role="region"
 				class="fixed inset-0 h-screen w-full backdrop-blur-md z-11 cursor"
 			></div>
@@ -264,6 +282,59 @@
 					</h2>
 				</div>
 				<Button text={'manual'} action={openManual} />
+				{#if isManualMode}
+					<div
+						class="fixed inset-0 flex flex-col py-10 p-8 w-90/100 h-fit m-auto bg-white ring-1 ring-gray-300 rounded-2xl z-11"
+					>
+						<h2 class="flex font-libre text-2xl lg:text-3xl text-slate-800">
+							<img src={icon} alt="" class="mr-2 w-11" />Manual
+						</h2>
+						<div class="mt-5 mb-10">
+							<p class="font-geist text-sm text-slate-800 mb-2">
+								Kilopound is a tool that helps you <span class="font-semibold"
+									>visualize weights on a barbell.</span
+								>
+							</p>
+							<ul class="font-geist text-sm text-slate-800 list-disc list-inside">
+								<span class="text-sm"
+									><li class="mb-2 ml-2">
+										Click the circular weight plates to load the barbell
+									</li></span
+								>
+								<span class="text-sm"
+									><li class="mb-2 ml-2">Click a loaded plate on the barbell to remove it</li></span
+								>
+								<span class="text-sm"
+									><li class="mb-2 ml-2">
+										All plates on the barbell can be cleared using the reset button
+									</li></span
+								>
+								<span class="text-sm"
+									><li class="mb-2 ml-2">
+										Manually enter a weight total to auto-load the barbell with plates
+									</li></span
+								>
+								<span class="text-sm"
+									><li class="mb-2 ml-2">
+										Convert between KG and LBS, and swap between units
+									</li></span
+								>
+								<span class="text-sm"
+									><li class="mb-2 ml-2">
+										Switch between different barbells for your use case
+									</li></span
+								>
+							</ul>
+						</div>
+						<button
+							class="font-geist bg-slate-800 text-white whitespace-nowrap rounded-md w-full h-fit border py-2.5 px-5 text-xs cursor-pointer"
+							>Walkthrough</button
+						>
+						<span class="font-libre italic text-center text-sm mt-5 lg:text-base text-slate-500"
+							>Click anywhere or press any key to close</span
+						>
+					</div>
+				{/if}
 			</div>
 
 			<!-- Total Weight Display -->
