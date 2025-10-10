@@ -5,7 +5,8 @@
 	import Plate from '$lib/components/Plate.svelte';
 	import LoadedPlate from '$lib/components/LoadedPlate.svelte';
 	import Barbell from '$lib/components/Barbell.svelte';
-	import icon from '$lib/assets/iconplate.svg';
+	import Manual from '$lib/components/Manual.svelte';
+	import { tick } from 'svelte';
 
 	/* Interfaces */
 	// Barbell has a name, and two unit values
@@ -67,7 +68,8 @@
 	let barbell: Barbell = $state(BARBELL_TYPES[0]);
 	let plates: Plate[] = $derived([]);
 	let renderPlates: Plate[] = $derived(renderLoadedPlates(plates));
-	let unit: string = $state(Unit.kg);
+	let renderPlatesReverse: Plate[] = $derived(renderPlates.reverse());
+	let unit: string = $state(Unit.lbs);
 	let convertedUnit: string = $derived(unit === Unit.kg ? Unit.lbs : Unit.kg);
 	let total: number = $derived(
 		unit == Unit.kg
@@ -96,11 +98,13 @@
 
 	// Manual mode setup
 	let isManualMode: boolean = $state(false);
+	let isWalkthroughMode: boolean = $state(false);
 
 	// Input mode setup
 	let isInputMode: boolean = $state(false);
 	let isInputLoading: boolean = $state(false);
 	let isInputError: boolean = $state(false); // input error
+	let inputRef: HTMLInputElement | null = $state(null);
 
 	// Booleans for visibility
 	let landingVisible: boolean = $state(false);
@@ -111,14 +115,13 @@
 			? document.body.classList.add('overflow-hidden')
 			: document.body.classList.remove('overflow-hidden');
 	});
-	$inspect(plates);
 
 	/* Functions */
 	// Add plate pair to the plates array
 	function addPlate(plate: Plate) {
 		if (!isPlateLimit) {
 			if (plates.some((p) => p.weight === plate.weight)) {
-				plates = plates.map((current) =>
+				plates = plates.map((current, i) =>
 					current.weight === plate.weight ? { ...current, count: current.count + 2 } : current
 				);
 			} else {
@@ -140,24 +143,23 @@
 		sortLoadedPlates();
 	}
 
+	// Every time we add a plate, update individual plate counter
+	function updatePlateCount(plate: Plate) {
+		return plates.find((p) => p.weight === plate.weight)?.count;
+	}
+
 	// Halves the current plate array's 'count' to render one side of barbell's plates
 	function renderLoadedPlates(plates: Plate[]) {
+		console.log(plates);
 		return plates.flatMap((plate) => {
 			const half = Math.floor(plate.count / 2);
 			return Array(half).fill(plate);
 		});
 	}
 
-	// Toggle between KG and LBS
-	function toggleUnit() {
-		if (unit === Unit.kg) unit = Unit.lbs;
-		else unit = Unit.kg;
-		resetBarbell();
-	}
-
 	// Sort loaded plates
 	function sortLoadedPlates() {
-		plates = [...plates].sort((a, b) => b.weight - a.weight);
+		plates = [...plates].sort((a, b) => a.weight - b.weight);
 	}
 
 	// Format loaded plates' weight text to be vertical, using newlines
@@ -168,8 +170,16 @@
 
 	// Calculate loaded plates' sizes
 	function calculateLoadedPlateSize(weight: number) {
-		const height = 50 + weight * 6;
-		const width = 10 + weight * 0.35;
+		let height: number;
+		let width: number;
+
+		if (unit == Unit.kg) {
+			height = 50 + weight * 5;
+			width = 10 + weight * 0.35;
+		} else {
+			height = 50 + weight * 2.5;
+			width = 10 + weight * 0.25;
+		}
 
 		return { width, height };
 	}
@@ -179,8 +189,36 @@
 		if (unit === Unit.kg) {
 			return 50 + weight * 3;
 		} else {
-			return 40 + weight * 2;
+			return 50 + weight * 1.5;
 		}
+	}
+
+	// Check if loaded plate is hovered
+	//function handleLoadedPlateHover(position: number) {
+	//	let flag = false;
+	//	console.log(position);
+	//	console.log('got inhere');
+	//	// if plate is hovered at position, toggle it true in the array.
+	//	renderPlates.forEach((plate1) => {
+	//		console.log('plate1: ' + plate1.position);
+	//		renderPlatesReverse.forEach((plate2) => {
+	//			console.log('plate2: ' + plate2.position);
+	//			if (plate1.position === position && plate2.position === position) {
+	//				console.log('got inside');
+	//
+	//				//plate2.isHovered = true;
+	//			}
+	//		});
+	//	});
+	//	console.log(renderPlates);
+	//	console.log(renderPlatesReverse);
+	//}
+
+	// Toggle between KG and LBS
+	function toggleUnit() {
+		if (unit === Unit.kg) unit = Unit.lbs;
+		else unit = Unit.kg;
+		resetBarbell();
 	}
 
 	// Reset Barbell UI and Total Weight Display by clearing plates array
@@ -188,14 +226,17 @@
 		plates = [];
 	}
 
-	// Open manual
-	function openManual() {
-		isManualMode = true;
-	}
-
 	// Open input mode
 	function openInput() {
 		isInputMode = true;
+
+		tick().then(() => {
+			// highlight input for UX
+			if (inputRef) {
+				inputRef.focus();
+				inputRef.select();
+			}
+		});
 	}
 
 	// Close input mode
@@ -250,6 +291,19 @@
 		// intentionally trigger loading state
 		//closeInput();
 	}
+
+	// Open manual
+	function openManual() {
+		isManualMode = true;
+	}
+
+	// Begin walkthrough process
+	function openWalkthrough() {
+		isWalkthroughMode = true;
+	}
+
+	// Open barbell options menu
+	function openBarbellOptions() {}
 </script>
 
 <main class="relative">
@@ -272,7 +326,7 @@
 		{/if}
 		<div class="relative flex flex-col items-center px-4 pt-2">
 			<!-- Title -->
-			<div class="flex justify-between w-full mb-15">
+			<div class="flex justify-between w-full mb-12">
 				<div class="flex flex-col">
 					<h1 class="font-libre italic text-slate-800 text-3xl/normal lg:text-6xl/normal">
 						Kilopound
@@ -283,104 +337,67 @@
 				</div>
 				<Button text={'manual'} action={openManual} />
 				{#if isManualMode}
-					<div
-						class="fixed inset-0 flex flex-col py-10 p-8 w-90/100 h-fit m-auto bg-white ring-1 ring-gray-300 rounded-2xl z-11"
-					>
-						<h2 class="flex font-libre text-2xl lg:text-3xl text-slate-800">
-							<img src={icon} alt="" class="mr-2 w-11" />Manual
-						</h2>
-						<div class="mt-5 mb-10">
-							<p class="font-geist text-sm text-slate-800 mb-2">
-								Kilopound is a tool that helps you <span class="font-semibold"
-									>visualize weights on a barbell.</span
-								>
-							</p>
-							<ul class="font-geist text-sm text-slate-800 list-disc list-inside">
-								<span class="text-sm"
-									><li class="mb-2 ml-2">
-										Click the circular weight plates to load the barbell
-									</li></span
-								>
-								<span class="text-sm"
-									><li class="mb-2 ml-2">Click a loaded plate on the barbell to remove it</li></span
-								>
-								<span class="text-sm"
-									><li class="mb-2 ml-2">
-										All plates on the barbell can be cleared using the reset button
-									</li></span
-								>
-								<span class="text-sm"
-									><li class="mb-2 ml-2">
-										Manually enter a weight total to auto-load the barbell with plates
-									</li></span
-								>
-								<span class="text-sm"
-									><li class="mb-2 ml-2">
-										Convert between KG and LBS, and swap between units
-									</li></span
-								>
-								<span class="text-sm"
-									><li class="mb-2 ml-2">
-										Switch between different barbells for your use case
-									</li></span
-								>
-							</ul>
-						</div>
-						<button
-							class="font-geist bg-slate-800 text-white whitespace-nowrap rounded-md w-full h-fit border py-2.5 px-5 text-xs cursor-pointer"
-							>Walkthrough</button
-						>
-						<span class="font-libre italic text-center text-sm mt-5 lg:text-base text-slate-500"
-							>Click anywhere or press any key to close</span
-						>
-					</div>
+					<Manual {closeOverlay} {openWalkthrough} />
 				{/if}
 			</div>
 
 			<!-- Total Weight Display -->
 			<div class="flex flex-col items-center text-center">
 				<span class="text-xs text-gray-400 z-10">{barbell.name}</span>
-				<div class="relative flex items-center">
+				<div class="relative flex items-center justify-center">
 					<button
 						onclick={openInput}
-						class="font-geist font-bold text-center text-3xl text-slate-800 px-1 py-2 my-1.5 w-42 hover:rounded-md hover:ring-1 hover:ring-gray-300 cursor-pointer z-10"
+						class="font-geist font-bold text-center text-3xl text-slate-800 px-3.5 py-1.75 my-1 w-full border border-transparent hover:rounded-md hover:border-1 hover:border-gray-300 cursor-pointer z-10"
 						>{total}
 						{unit}
 						<span
-							class="self-center absolute bottom-1/2 top-1/2 ml-2 icon-[material-symbols--edit-outline] text-lg"
+							class="self-center absolute bottom-1/2 top-1/2 mb-0.5 ml-4 icon-[material-symbols--edit-outline] text-lg"
 						></span></button
 					>
+					<!-- Input Mode -->
 					{#if isInputMode}
-						<div class="absolute flex flex-col items-center z-11">
-							{#if unit === Unit.kg}
-								<span class="font-geist text-xs text-gray-400"
-									>Max load: {WEIGHT_LIMIT_KG} {unit}</span
-								>
-							{/if}
-							{#if unit === Unit.lbs}
-								<span class="font-geist text-xs text-gray-400"
-									>Max load: {WEIGHT_LIMIT_LBS} {unit}</span
-								>
-							{/if}
-							<span class="font-geist text-xs text-gray-400"
-								>Max plates per side: {PLATE_LIMIT}</span
+						<!-- Mobile -->
+						<div
+							class="absolute top-[-31px] sm:top-auto flex flex-col sm:flex-row w-full justify-start items-center z-11"
+						>
+							<div
+								class="flex flex-col sm:absolute sm:right-[105%] sm:text-right whitespace-nowrap"
 							>
-							<input
-								type="text"
-								inputmode="numeric"
-								class={`${isInputError ? 'ring-red-500' : 'ring-gray-300'} outline-none font-geist font-bold text-center bg-white text-3xl text-slate-800 px-1 py-1.5 my-1.5 w-42 rounded-md ring-1  [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none`}
-								bind:value={inputTotal}
-								placeholder="0"
-								onbeforeinput={(e) => validateInput(e)}
-							/>
+								{#if unit === Unit.kg}
+									<p class="font-geist text-xs text-gray-400">
+										Max load: {WEIGHT_LIMIT_KG}
+										{unit}
+									</p>
+								{/if}
+								{#if unit === Unit.lbs}
+									<p class="font-geist text-xs text-gray-400">
+										Max load: {WEIGHT_LIMIT_LBS}
+										{unit}
+									</p>
+								{/if}
+								<p class="font-geist text-xs text-gray-400">Max plates per side: {PLATE_LIMIT}</p>
+							</div>
+							<div class="flex flex-col justify-start my-1 sm:m-0">
+								<input
+									type="text"
+									inputmode="numeric"
+									class={`${isInputError ? 'border-red-500' : 'border-gray-300'} border outline-none font-geist font-bold text-center px-3.5 py-1.25 sm:py-1.25 w-full bg-white text-3xl text-slate-800 rounded-md [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none`}
+									bind:value={inputTotal}
+									bind:this={inputRef}
+									placeholder="0"
+									onbeforeinput={(e) => validateInput(e)}
+								/>
+								<p
+									class={`${isInputError ? 'visible' : 'invisible'} mt-1 mb-1 sm:mb-0 sm:absolute sm:left-auto sm:top-full font-geist text-xs text-red-500 whitespace-nowrap`}
+								>
+									Provide a valid number.
+								</p>
+							</div>
 							<button
 								onclick={loadWeight}
-								class="font-geist bg-slate-800 text-white whitespace-nowrap rounded-md w-full h-fit border py-2.5 px-5 text-xs cursor-pointer"
+								class="font-geist bg-slate-800 text-white whitespace-nowrap sm:absolute sm:left-[105%] rounded-md w-full h-fit py-2.5 px-5 text-xs cursor-pointer"
 								>Autoload</button
 							>
-							<!--style this button later by adding button versions?
-							<Button text={'Autoload'} action={loadWeight} />
-							-->
 						</div>
 					{/if}
 				</div>
@@ -393,71 +410,83 @@
 			</div>
 
 			<!-- Barbell -->
-			<div class=" overflow-clip">
-				<section class="hidden sm:flex">
-					<div>Map loaded plates here</div>
+			<div class="overflow-clip">
+				<!-- Desktop -->
+				<section class="hidden sm:flex items-center justify-center min-h-50 mt-5 mb-10">
+					{#each renderPlates as plate}
+						<LoadedPlate
+							{...plate}
+							size={calculateLoadedPlateSize(plate.weight)}
+							formatLoadedPlateNumber={() => formatLoadedPlateNumber(plate.weight)}
+							removePlate={() => removePlate(plate)}
+						/>
+					{/each}
 					<div class="w-70 h-2 bg-gray-800"></div>
-					<div>Map loaded plates here</div>
+					{#each renderPlatesReverse as plate}
+						<LoadedPlate
+							{...plate}
+							size={calculateLoadedPlateSize(plate.weight)}
+							formatLoadedPlateNumber={() => formatLoadedPlateNumber(plate.weight)}
+							removePlate={() => removePlate(plate)}
+						/>
+					{/each}
 				</section>
-				{#if unit == Unit.kg}
-					<section class="flex items-center justify-center min-h-50 sm:hidden my-12">
-						<div class="w-30 h-3 bg-gray-800"></div>
-						{#each renderPlates as plate}
-							<LoadedPlate
-								{...plate}
-								size={calculateLoadedPlateSize(plate.weight)}
-								formatLoadedPlateNumber={() => formatLoadedPlateNumber(plate.weight)}
-								removePlate={() => removePlate(plate)}
-							/>
-						{/each}
-					</section>
-				{/if}
+				<!-- Mobile -->
+				<section class="flex items-center justify-center min-h-50 mt-5 mb-10 sm:hidden">
+					<div class="w-30 h-3 bg-gray-800"></div>
+					{#each renderPlates as plate}
+						<LoadedPlate
+							{...plate}
+							size={calculateLoadedPlateSize(plate.weight)}
+							formatLoadedPlateNumber={() => formatLoadedPlateNumber(plate.weight)}
+							removePlate={() => removePlate(plate)}
+						/>
+					{/each}
+				</section>
 			</div>
 
 			<!-- Plates -->
-			<section class="mb-26">
+			<section class="flex flex-col sm:flex-row sm:items-end sm:gap-2 items-center mb-22">
 				{#if unit == Unit.kg}
 					<section class="flex justify-center w-full items-end gap-2">
 						{#each PLATE_KG.slice(0, 3) as plate, i}
 							<Plate
 								{...plate}
 								minSize={calculatePlateSize(plate.weight)}
+								count={updatePlateCount(plate)}
 								addPlate={() => {
 									(addPlate(plate), (plates = plates));
 								}}
 							/>
 						{/each}
 					</section>
-					<section class="flex justify-center w-full items-end gap-2 mt-5">
+					<section class="flex justify-center w-full items-end gap-2 mt-5 sm:mt-0">
 						{#each PLATE_KG.slice(3) as plate, i}
 							<Plate
-								weight={plate.weight}
-								color={plate.color}
+								{...plate}
 								minSize={calculatePlateSize(plate.weight)}
-								count={plate.count}
+								count={updatePlateCount(plate)}
 								addPlate={() => addPlate(plate)}
 							/>
 						{/each}
 					</section>
 				{:else if unit == Unit.lbs}
-					<section class="flex justify-center flex-wrap items-end gap-2">
+					<section class="flex justify-center w-full items-end gap-2">
 						{#each PLATE_LBS.slice(0, 3) as plate}
 							<Plate
-								weight={plate.weight}
-								color={plate.color}
+								{...plate}
 								minSize={calculatePlateSize(plate.weight)}
-								count={plate.count}
+								count={updatePlateCount(plate)}
 								addPlate={() => addPlate(plate)}
 							/>
 						{/each}
 					</section>
-					<section class="flex justify-center flex-wrap items-end gap-2 mt-5">
+					<section class="flex justify-center w-full items-end gap-2 mt-5 sm:mt-0">
 						{#each PLATE_LBS.slice(3) as plate}
 							<Plate
-								weight={plate.weight}
-								color={plate.color}
+								{...plate}
 								minSize={calculatePlateSize(plate.weight)}
-								count={plate.count}
+								count={updatePlateCount(plate)}
 								addPlate={() => addPlate(plate)}
 							/>
 						{/each}
@@ -470,7 +499,7 @@
 				<div class="flex gap-1">
 					<Button text={'Swap to LBS'} action={toggleUnit} />
 					<Button text={'Reset'} action={resetBarbell} icon={'icon-[ri--reset-left-fill]'} />
-					<Button text={'Normal Barbell'} action={toggleUnit} />
+					<Button text={'Normal Barbell'} action={openBarbellOptions} />
 				</div>
 			</div>
 		</div>

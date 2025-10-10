@@ -8,7 +8,7 @@
 
 <button
 	onclick={removePlate}
-	class={`cursor-pointer whitespace-pre-line rounded-sm mr-0.5 ${color} font-geist text-xs text-white font-medium`}
+	class={`cursor-pointer whitespace-pre-line rounded-sm mx-0.25 ${color} font-geist text-xs text-white font-medium hover:scale-y-105 hover:opacity-90 transition-opacity ease-in-out duration-75`}
 	style="min-width: {width}; min-height: {height}"
 >
 	{formatLoadedPlateNumber(weight)}

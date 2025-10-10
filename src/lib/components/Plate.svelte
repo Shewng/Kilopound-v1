@@ -1,10 +1,6 @@
 <script lang="ts">
 	// Circular plates you can click + counter
-	let { weight, color, count, minSize, addPlate } = $props();
-	let total: number = $derived(count);
-	$inspect(total);
-	console.log('got here');
-	$inspect(count);
+	let { weight, color, count = 0, minSize, addPlate } = $props();
 </script>
 
 <div class="flex flex-col items-center">

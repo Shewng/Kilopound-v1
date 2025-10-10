@@ -16,7 +16,7 @@
 		<h1 class="font-libre italic text-6xl/normal lg:text-9xl/normal text-slate-800">Kilopound</h1>
 		<p class="font-libre text-base lg:text-xl text-gray-700">visualizing weights on a barbell</p>
 	</div>
-	<p class="font-libre italic text-sm lg:text-base text-slate-500 fixed bottom-1/9">
+	<p class="font-libre italic text-sm text-slate-500 fixed bottom-1/9">
 		Click anywhere or press any key to start
 	</p>
 	<!--
