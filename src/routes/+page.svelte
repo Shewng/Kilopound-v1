@@ -306,7 +306,7 @@
 	function openBarbellOptions() {}
 </script>
 
-<main class="relative">
+<main class="relative touch-manipulation">
 	{#if landingVisible}
 		<LandingPage
 			dismiss={() => {
@@ -326,7 +326,7 @@
 		{/if}
 		<div class="relative flex flex-col items-center px-4 pt-2">
 			<!-- Title -->
-			<div class="flex justify-between w-full mb-12">
+			<div class="flex justify-between w-full mb-10">
 				<div class="flex flex-col">
 					<h1 class="font-libre italic text-slate-800 text-3xl/normal lg:text-6xl/normal">
 						Kilopound
@@ -347,7 +347,7 @@
 				<div class="relative flex items-center justify-center">
 					<button
 						onclick={openInput}
-						class="font-geist font-bold text-center text-3xl text-slate-800 px-3.5 py-1.75 my-1 w-full border border-transparent hover:rounded-md hover:border-1 hover:border-gray-300 cursor-pointer z-10"
+						class="font-geist font-bold text-center text-3xl text-slate-800 px-3.5 py-1.75 my-0.5 w-full border border-transparent hover:rounded-md hover:border-1 hover:border-gray-300 cursor-pointer z-10"
 						>{total}
 						{unit}
 						<span
@@ -432,7 +432,7 @@
 					{/each}
 				</section>
 				<!-- Mobile -->
-				<section class="flex items-center justify-center min-h-50 mt-5 mb-10 sm:hidden">
+				<section class="flex items-center justify-center min-h-42 mt-4 mb-6 sm:hidden">
 					<div class="w-30 h-3 bg-gray-800"></div>
 					{#each renderPlates as plate}
 						<LoadedPlate
@@ -460,7 +460,7 @@
 							/>
 						{/each}
 					</section>
-					<section class="flex justify-center w-full items-end gap-2 mt-5 sm:mt-0">
+					<section class="flex justify-center w-full items-end gap-2 mt-4 sm:mt-0">
 						{#each PLATE_KG.slice(3) as plate, i}
 							<Plate
 								{...plate}
@@ -481,7 +481,7 @@
 							/>
 						{/each}
 					</section>
-					<section class="flex justify-center w-full items-end gap-2 mt-5 sm:mt-0">
+					<section class="flex justify-center w-full items-end gap-2 mt-4 sm:mt-0">
 						{#each PLATE_LBS.slice(3) as plate}
 							<Plate
 								{...plate}
@@ -495,7 +495,7 @@
 			</section>
 
 			<!-- Buttons -->
-			<div class="fixed bottom-0 flex flex-col justify-center items-center mt-auto mb-5">
+			<div class="fixed bottom-0 flex flex-col justify-center items-center mt-auto mb-2">
 				<div class="flex gap-1">
 					<Button text={'Swap to LBS'} action={toggleUnit} />
 					<Button text={'Reset'} action={resetBarbell} icon={'icon-[ri--reset-left-fill]'} />
