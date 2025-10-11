@@ -495,7 +495,7 @@
 			</section>
 
 			<!-- Buttons -->
-			<div class="fixed bottom-0 flex flex-col justify-center items-center mt-auto mb-2">
+			<div class=" bottom-0 flex flex-col justify-center items-center mt-auto mb-2">
 				<div class="flex gap-1">
 					<Button text={'Swap to LBS'} action={toggleUnit} />
 					<Button text={'Reset'} action={resetBarbell} icon={'icon-[ri--reset-left-fill]'} />
