@@ -107,7 +107,7 @@
 	let inputRef: HTMLInputElement | null = $state(null);
 
 	// Booleans for visibility
-	let landingVisible: boolean = $state(false);
+	let landingVisible: boolean = $state(true);
 	let overlayVisible: boolean = $derived(isManualMode || isInputMode);
 
 	$effect(() => {
