@@ -174,10 +174,10 @@
 		let width: number;
 
 		if (unit == Unit.kg) {
-			height = 50 + weight * 5;
+			height = 55 + weight * 4;
 			width = 10 + weight * 0.35;
 		} else {
-			height = 50 + weight * 2.5;
+			height = 55 + weight * 2;
 			width = 10 + weight * 0.25;
 		}
 
@@ -187,9 +187,9 @@
 	// Calculate round plates' sizes
 	function calculatePlateSize(weight: number) {
 		if (unit === Unit.kg) {
-			return 50 + weight * 3;
+			return 50 + weight * 2.8;
 		} else {
-			return 50 + weight * 1.5;
+			return 50 + weight * 1.3;
 		}
 	}
 
@@ -347,7 +347,7 @@
 				<div class="relative flex items-center justify-center">
 					<button
 						onclick={openInput}
-						class="font-geist font-bold text-center text-3xl text-slate-800 px-3.5 py-1.75 my-0.5 w-full border border-transparent hover:rounded-md hover:border-1 hover:border-gray-300 cursor-pointer z-10"
+						class="font-geist font-bold text-center text-3xl text-slate-800 px-3.5 py-1.75 w-full border border-transparent hover:rounded-md hover:border-1 hover:border-gray-300 cursor-pointer z-10"
 						>{total}
 						{unit}
 						<span
@@ -381,7 +381,7 @@
 								<input
 									type="text"
 									inputmode="numeric"
-									class={`${isInputError ? 'border-red-500' : 'border-gray-300'} border outline-none font-geist font-bold text-center px-3.5 py-1.25 sm:py-1.25 w-full bg-white text-3xl text-slate-800 rounded-md [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none`}
+									class={`${isInputError ? 'border-red-500' : 'border-gray-300'} border outline-none font-geist font-bold text-center px-3.5 py-1.25 w-full bg-white text-3xl text-slate-800 rounded-md [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none`}
 									bind:value={inputTotal}
 									bind:this={inputRef}
 									placeholder="0"
@@ -412,7 +412,7 @@
 			<!-- Barbell -->
 			<div class="overflow-clip">
 				<!-- Desktop -->
-				<section class="hidden sm:flex items-center justify-center min-h-50 mt-5 mb-10">
+				<section class="hidden sm:flex items-center justify-center min-h-50 mt-4 mb-10">
 					{#each renderPlates as plate}
 						<LoadedPlate
 							{...plate}
@@ -432,7 +432,7 @@
 					{/each}
 				</section>
 				<!-- Mobile -->
-				<section class="flex items-center justify-center min-h-42 mt-4 mb-6 sm:hidden">
+				<section class="flex items-center justify-center min-h-45 my-4 sm:hidden">
 					<div class="w-30 h-3 bg-gray-800"></div>
 					{#each renderPlates as plate}
 						<LoadedPlate
@@ -448,7 +448,7 @@
 			<!-- Plates -->
 			<section class="flex flex-col sm:flex-row sm:items-end sm:gap-2 items-center mb-22">
 				{#if unit == Unit.kg}
-					<section class="flex justify-center w-full items-end gap-2">
+					<section class="flex justify-center w-full items-end gap-2.5">
 						{#each PLATE_KG.slice(0, 3) as plate, i}
 							<Plate
 								{...plate}
@@ -460,7 +460,7 @@
 							/>
 						{/each}
 					</section>
-					<section class="flex justify-center w-full items-end gap-2 mt-4 sm:mt-0">
+					<section class="flex justify-center w-full items-end gap-2.5 mt-4 sm:mt-0">
 						{#each PLATE_KG.slice(3) as plate, i}
 							<Plate
 								{...plate}
@@ -471,7 +471,7 @@
 						{/each}
 					</section>
 				{:else if unit == Unit.lbs}
-					<section class="flex justify-center w-full items-end gap-2">
+					<section class="flex justify-center w-full items-end gap-2.5">
 						{#each PLATE_LBS.slice(0, 3) as plate}
 							<Plate
 								{...plate}
@@ -481,7 +481,7 @@
 							/>
 						{/each}
 					</section>
-					<section class="flex justify-center w-full items-end gap-2 mt-4 sm:mt-0">
+					<section class="flex justify-center w-full items-end gap-2.5 mt-4 sm:mt-0">
 						{#each PLATE_LBS.slice(3) as plate}
 							<Plate
 								{...plate}
